@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "../globals.css";
 import { notFound } from "next/navigation";
+import Header from "../../components/global/Header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +19,10 @@ export default function LocaleLayout({ children, params: { locale } }) {
 
 	return (
 		<html lang={locale}>
-			<body className={inter.className}>{children}</body>
+			<body className={inter.className}>
+				<Header />
+				{children}
+			</body>
 		</html>
 	);
 }
