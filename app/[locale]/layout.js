@@ -18,10 +18,10 @@ export default function LocaleLayout({ children, params: { locale } }) {
 	if (!locales.includes(locale)) notFound();
 
 	return (
-		<html lang={locale}>
-			<body className={inter.className}>
+		<html lang={locale} className="h-full">
+			<body className="h-full">
 				<Header />
-				{children}
+				<main className="w-screen h-screen pt-16">{children}</main>
 			</body>
 		</html>
 	);

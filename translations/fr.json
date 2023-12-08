@@ -1,5 +1,20 @@
 {
 	"Index": {
 		"title": "Hello world!"
+	},
+	"auth": {
+		"signIn": "Connectez-vous à votre compte",
+		"notAMember": "Pas encore membre?",
+		"startFreeTrial": "Inscrivez-vous ici",
+		"emailAddress": "Adresse e-mail",
+		"password": "Mot de passe",
+		"rememberMe": "Se souvenir de moi",
+		"forgotPassword": "Mot de passe oublié?",
+		"signInButton": "Se connecter",
+		"altText": "",
+		"emailNotValid": "L'adresse e-mail n'est pas valide",
+		"passwordNotValid": "Le mot de passe n'est pas valide",
+		"fieldRequired": "Ce champ est requis",
+		"serverError": "Une erreur s'est produite. Veuillez réessayer plus tard."
 	}
 }

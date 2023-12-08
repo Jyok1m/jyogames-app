@@ -1,5 +1,20 @@
 {
 	"Index": {
 		"title": "Hello world!"
+	},
+	"auth": {
+		"signIn": "Sign in to your account",
+		"notAMember": "Not a member?",
+		"startFreeTrial": "Register here",
+		"emailAddress": "Email address",
+		"password": "Password",
+		"rememberMe": "Remember me",
+		"forgotPassword": "Forgot password?",
+		"signInButton": "Sign in",
+		"altText": "",
+		"emailNotValid": "Email address is not valid",
+		"passwordNotValid": "Password is not valid",
+		"fieldRequired": "Field is required",
+		"serverError": "An error occurred. Please try again later."
 	}
 }
