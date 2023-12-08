@@ -1,14 +1,32 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState, useEffect } from "react";
+import socketIOClient from "socket.io-client";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 function classNames(...classes) {
 	return classes.filter(Boolean).join(" ");
 }
 
 export default function Header() {
+	const [socket, setSocket] = useState(null);
+
+	useEffect(() => {
+		const socket = socketIOClient(process.env.NEXT_PUBLIC_BACKEND_URL); // Création du socket et lien avec le serveur
+		setSocket(socket); // Stockage du socket dans le state
+
+		// Connection du socket au serveur
+		socket.on("connect", () => {
+			console.log("Socket connected to server");
+		});
+
+		return () => {
+			socket.off("connect"); // Débranche l'écoute du socket "connect"
+			socket.disconnect(); // Déconnecte le socket du serveur
+		};
+	}, []);
+
 	return (
 		<Disclosure as="nav" className="bg-blue-950 shadow absolute w-full">
 			{({ open }) => (
