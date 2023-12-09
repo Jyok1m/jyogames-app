@@ -18,8 +18,8 @@ export default function LocaleLayout({ children, params: { locale } }) {
 	if (!locales.includes(locale)) notFound();
 
 	return (
-		<html lang={locale} className="h-full">
-			<body className="h-full">
+		<html lang={locale} className="h-full antialiased" suppressHydrationWarning>
+			<body>
 				<Header />
 				<main className="w-screen h-screen pt-16">{children}</main>
 			</body>
