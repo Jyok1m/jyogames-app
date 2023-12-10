@@ -36,5 +36,12 @@
 		"existingEmail": "Cette adresse e-mail existe déjà",
 		"passwordsDontMatch": "Les mots de passe ne correspondent pas",
 		"resetEmailSent": "Un e-mail a été envoyé à l'adresse fournie. Veuillez vérifier votre boîte de réception."
+	},
+	"header": {
+		"about": "À propos",
+		"contact": "Contact",
+		"home": "Accueil",
+		"signIn": "Se connecter",
+		"signOut": "Se déconnecter"
 	}
 }

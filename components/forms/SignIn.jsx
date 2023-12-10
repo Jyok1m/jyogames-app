@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { connectUser } from "@/lib/reducers/user";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -15,6 +17,7 @@ export default function SignIn() {
 	const t = useTranslations("auth");
 	const router = useRouter();
 	const pathname = usePathname();
+	const dispatch = useDispatch();
 
 	const [formType, setFormType] = useState("signIn");
 	const [loading, setLoading] = useState(false);
@@ -90,7 +93,7 @@ export default function SignIn() {
 						case 200:
 							setLoading(false);
 							reset();
-							localStorage.setItem("uid", json.uid);
+							dispatch(connectUser(json.uid));
 							router.push("/");
 							break;
 						case 401:

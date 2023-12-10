@@ -36,5 +36,12 @@
 		"existingEmail": "Email address already exists",
 		"passwordsDontMatch": "Passwords don't match",
 		"resetEmailSent": "Reset email sent successfully !"
+	},
+	"header": {
+		"about": "About",
+		"contact": "Contact",
+		"home": "Home",
+		"signIn": "Sign in",
+		"signOut": "Sign out"
 	}
 }
