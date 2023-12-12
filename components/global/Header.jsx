@@ -17,24 +17,29 @@ export default function Header() {
 	const t = useTranslations("header");
 	const router = useRouter();
 	const dispatch = useDispatch();
-	const uid = useSelector((state) => state.user.value.uid);
+	const { uid } = useSelector((state) => state.user.value);
 
 	const [socket, setSocket] = useState(null);
 
+	// Handle socket connection with backend
 	useEffect(() => {
 		const socket = socketIOClient(process.env.NEXT_PUBLIC_BACKEND_URL); // Création du socket et lien avec le serveur
 		setSocket(socket); // Stockage du socket dans le state
 
 		// Connection du socket au serveur
 		socket.on("connect", () => {
-			console.log("Socket connected to server");
+			if (uid) {
+				socket.emit("connectUser", { uid }, (response) => {
+					console.log(response);
+				});
+			}
 		});
 
 		return () => {
 			socket.off("connect"); // Débranche l'écoute du socket "connect"
 			socket.disconnect(); // Déconnecte le socket du serveur
 		};
-	}, []);
+	}, [uid]);
 
 	const handleDisconnection = async () => {
 		const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/sign-out`, {
@@ -82,7 +87,7 @@ export default function Header() {
 									>
 										Accueil
 									</a>
-									<a
+									{/* <a
 										href="/"
 										className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-white hover:border-indigo-500 hover:text-indigo-500"
 									>
@@ -99,11 +104,12 @@ export default function Header() {
 										className="inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-white hover:border-indigo-500 hover:text-indigo-500"
 									>
 										À venir
-									</a>
+									</a> */}
 								</div>
 							</div>
 							<div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
 								{/* Profile dropdown */}
+
 								{uid && (
 									<Menu as="div" className="relative ml-3">
 										<div>
@@ -127,7 +133,7 @@ export default function Header() {
 											leaveTo="transform opacity-0 scale-95"
 										>
 											<Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-												<Menu.Item>
+												{/* <Menu.Item>
 													{({ active }) => (
 														<a href="#" className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700")}>
 															Mon compte
@@ -140,7 +146,7 @@ export default function Header() {
 															Paramètres
 														</a>
 													)}
-												</Menu.Item>
+												</Menu.Item> */}
 												<Menu.Item>
 													{({ active }) => (
 														<a
@@ -178,7 +184,7 @@ export default function Header() {
 							>
 								Accueil
 							</Disclosure.Button>
-							<Disclosure.Button
+							{/* <Disclosure.Button
 								as="a"
 								href="/"
 								className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
@@ -198,7 +204,7 @@ export default function Header() {
 								className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
 							>
 								À venir
-							</Disclosure.Button>
+							</Disclosure.Button> */}
 						</div>
 					</Disclosure.Panel>
 				</>
