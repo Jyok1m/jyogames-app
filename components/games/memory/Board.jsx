@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Card from "./Card";
 
-export default function Board({ newGameData }) {
-	const initialCardPool = newGameData?.newGame?.initialPool?.cards;
+export default function Board({ gameData }) {
+	const cardPool = gameData?.initialPool?.cards;
 
 	const [flippedCards, setFlippedCards] = useState([]);
 
@@ -29,7 +29,7 @@ export default function Board({ newGameData }) {
 	return (
 		<div className="w-full h-full overflow-auto">
 			<ul role="list" className="w-full h-full grid grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 md:grid-cols-4 xl:gap-x-8">
-				{initialCardPool?.map((card) => (
+				{cardPool?.map((card) => (
 					<Card key={card.position} url={card.url} position={card.position} flipCard={flipCard} isFlipped={flippedCards.includes(card.position)} />
 				))}
 			</ul>
