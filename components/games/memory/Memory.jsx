@@ -22,7 +22,8 @@ export default function Memory() {
 	const [foundCards, setFoundCards] = useState([]);
 	const [flipCount, setFlipCount] = useState(0);
 	const [roundCount, setRoundCount] = useState(0);
-	const [score, setScore] = useState(0);
+	// console.log("roundCount", roundCount);
+	const [scores, setScores] = useState([]);
 
 	/* ---------------------------------------------------------------- */
 	/*                            Game start                            */
@@ -76,6 +77,9 @@ export default function Memory() {
 
 			if (res.status === 200) {
 				setGameData(data.gameData);
+				setRoundCount(data.roundCount);
+				setScores(data.runningScore);
+				setFoundCards(data.foundCards);
 			} else {
 				throw new Error(data.error);
 			}
@@ -100,7 +104,7 @@ export default function Memory() {
 					setFoundCards([]);
 					setFlipCount(0);
 					setRoundCount(0);
-					setScore(0);
+					setScores([]);
 				} else {
 					throw new Error(data.error);
 				}
@@ -121,8 +125,7 @@ export default function Memory() {
 
 	useEffect(() => {
 		if (flipCount > 0 && flipCount % 2 === 0) {
-			checkMatch();
-			setRoundCount(roundCount + 1);
+			logProgression();
 		}
 	}, [flipCount]);
 
@@ -132,23 +135,42 @@ export default function Memory() {
 		setFlipCount(flipCount + 1);
 	};
 
-	// 3. Check if the last 2 flipped cards match
-	const checkMatch = () => {
-		const cardIdA = flippedCards[flippedCards.length - 1].cardId;
-		const cardIdB = flippedCards[flippedCards.length - 2].cardId;
+	// 3. Log progression
+	const logProgression = async () => {
+		try {
+			const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/memory/log-progression/${gameData._id}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ uid, flippedCards }),
+			});
 
-		if (cardIdA === cardIdB) {
-			setFoundCards([...foundCards, cardIdA]);
-			setScore(score + 1);
-		} else {
-			setTimeout(() => {
-				flipCardsBack(cardIdA, cardIdB);
-			}, 500);
+			const data = await res.json();
+
+			if (res.status === 200) {
+				const { roundCount, runningScore, foundCards, cardJustFound } = data;
+
+				setRoundCount(roundCount);
+				setScores(runningScore);
+				setFoundCards(foundCards);
+
+				if (!cardJustFound) {
+					setTimeout(() => flipCardsBack(), 500);
+				}
+			} else {
+				throw new Error(data.error);
+			}
+		} catch (err) {
+			console.error(err);
 		}
 	};
 
 	// 4. If the 2 flipped cards don't match, flip them back
-	const flipCardsBack = (cardIdA, cardIdB) => {
+	const flipCardsBack = () => {
+		const cardIdA = flippedCards[flippedCards.length - 1].cardId;
+		const cardIdB = flippedCards[flippedCards.length - 2].cardId;
+
 		const filteredFlippedCards = flippedCards.filter((card) => ![cardIdA, cardIdB].includes(card.cardId));
 		setFlippedCards(filteredFlippedCards);
 	};
@@ -176,9 +198,9 @@ export default function Memory() {
 					restartGame={() => restartGame()}
 					openGameListModal={() => setOpenGameListModal(true)}
 					roundCount={roundCount}
-					score={score}
+					score={scores.find((score) => score.uid === uid)?.score || 0}
 				/>
-				<Board gameData={gameData} flipCard={(card) => flipCard(card)} flippedCards={flippedCards} />
+				<Board gameData={gameData} flipCard={(card) => flipCard(card)} flippedCards={flippedCards} foundCards={foundCards} />
 			</div>
 			<Modal
 				title="Parties en cours"

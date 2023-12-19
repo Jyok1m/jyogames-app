@@ -7,7 +7,7 @@ export default function Card({ url, position, flipCard, isFlipped }) {
 				<img
 					src={url}
 					alt=""
-					className={!isFlipped ? "hidden" : "cursor-pointer object-cover group-hover:opacity-75"}
+					className={!isFlipped ? "hidden cursor-pointer group-hover:opacity-75" : "object-cover"}
 					onClick={() => flipCard(position)}
 				/>
 				<div className={isFlipped ? "hidden" : "cursor-pointer object-cover bg-black group-hover:opacity-75"} onClick={() => flipCard(position)} />
