@@ -1,9 +1,7 @@
-import { Inter } from "next/font/google";
 import "../globals.css";
 import { notFound } from "next/navigation";
 import pick from "lodash/pick";
 import { NextIntlClientProvider, useMessages } from "next-intl";
-
 import StoreProvider from "../StoreProvider";
 
 import Header from "@/components/global/Header";

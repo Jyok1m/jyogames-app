@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Board from "./Board";
@@ -22,7 +20,6 @@ export default function Memory() {
 	const [foundCards, setFoundCards] = useState([]);
 	const [flipCount, setFlipCount] = useState(0);
 	const [roundCount, setRoundCount] = useState(0);
-	// console.log("roundCount", roundCount);
 	const [scores, setScores] = useState([]);
 
 	/* ---------------------------------------------------------------- */
@@ -125,6 +122,7 @@ export default function Memory() {
 
 	useEffect(() => {
 		if (flipCount > 0 && flipCount % 2 === 0) {
+			console.log("flipCount", flipCount);
 			logProgression();
 		}
 	}, [flipCount]);

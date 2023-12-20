@@ -13,7 +13,7 @@ import { Spin } from "antd";
 import * as yup from "yup";
 import Notification from "@/components/popups/Notification";
 
-export default function SignIn() {
+export default function AuthForm() {
 	const t = useTranslations("auth");
 	const router = useRouter();
 	const pathname = usePathname();

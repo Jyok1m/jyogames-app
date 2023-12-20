@@ -24,6 +24,7 @@ export default function Header() {
 	const pathname = usePathname();
 	const params = useParams();
 	const slugSegment = useSelectedLayoutSegment() || "";
+
 	const { uid, locale } = useSelector((state) => state.user.value);
 
 	/* ---------------------------------------------------------------- */
@@ -114,7 +115,7 @@ export default function Header() {
 										href="/"
 										className="inline-flex items-center border-b-2 border-indigo-500 px-1 pt-1 text-sm font-medium text-white hover:border-indigo-500 hover:text-indigo-500"
 									>
-										Accueil
+										{t("home")}
 									</a>
 									{/* <a
 										href="/"
@@ -220,7 +221,7 @@ export default function Header() {
 															onClick={handleDisconnection}
 															className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700 cursor-pointer")}
 														>
-															Déconnexion
+															{t("signOut")}
 														</a>
 													)}
 												</Menu.Item>
