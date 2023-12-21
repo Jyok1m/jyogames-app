@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useRouter } from "next/navigation";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
-import Memory from "@/components/games/memory/Memory";
+import Memory from "@/app/components/games/memory/Memory";
 
 export default function Index() {
   const { uid } = useSelector((state) => state.user.value);
-  const guid = useSelectedLayoutSegment();
+  const path = usePathname();
   const router = useRouter();
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -24,10 +23,13 @@ export default function Index() {
         setIsAuthenticated(true);
       }
     })();
-  }, [uid]);
+  }, [path, uid]);
 
   const checkGame = async () => {
     try {
+      const guidSplit = path.split("/");
+      const guid = guidSplit[guidSplit.length - 1];
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/library/load-game/${guid}`,
       );

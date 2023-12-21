@@ -1,7 +1,7 @@
 import pick from "lodash/pick";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 
-import AuthForm from "@/components/forms/AuthForm";
+import AuthForm from "@/app/[locale]/auth/AuthForm";
 
 export default function Authentication() {
   const messages = useMessages();

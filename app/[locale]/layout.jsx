@@ -4,7 +4,7 @@ import pick from "lodash/pick";
 import { NextIntlClientProvider, useMessages } from "next-intl";
 import StoreProvider from "../StoreProvider";
 
-import Header from "@/components/global/Header";
+import Header from "@/app/components/Header";
 
 // Can be imported from a shared config
 const locales = ["en", "fr"];
