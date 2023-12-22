@@ -2,21 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-	--foreground-rgb: 0, 0, 0;
-	--background-start-rgb: 214, 219, 220;
-	--background-end-rgb: 255, 255, 255;
+.btn-orange-gradient {
+  @apply ml-4 w-5/12 cursor-pointer rounded-full bg-gradient-to-b from-orange-400 to-orange-600 px-4 py-4 font-bold text-white shadow-2xl hover:bg-gradient-to-b hover:from-orange-600 hover:to-orange-400;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--foreground-rgb: 255, 255, 255;
-		--background-start-rgb: 0, 0, 0;
-		--background-end-rgb: 0, 0, 0;
-	}
+.btn-blue-gradient {
+    @apply ml-4 w-5/12 cursor-pointer rounded-full bg-gradient-to-b from-blue-400 to-blue-600 px-4 py-4 font-bold text-white shadow-2xl hover:bg-gradient-to-b hover:from-blue-600 hover:to-blue-400;
 }
 
-body {
-	color: rgb(var(--foreground-rgb));
-	background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
-} */
+/* Colors */
+
+.orange-gradient {
+    @apply bg-gradient-to-b from-orange-400 to-orange-600 px-4 py-4 font-bold text-white shadow-2xl hover:bg-gradient-to-b hover:from-orange-600 hover:to-orange-400
+}
+
+.blue-gradient {
+    @apply bg-gradient-to-b from-blue-400 to-blue-600 px-4 py-4 font-bold text-white shadow-2xl hover:bg-gradient-to-b hover:from-blue-600 hover:to-blue-400
+}
+
+.dark-blue-gradient {
+    @apply bg-gradient-to-b from-blue-950 to-blue-900
+}

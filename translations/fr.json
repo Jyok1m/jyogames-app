@@ -2,6 +2,11 @@
 	"Index": {
 		"title": "Hello world!"
 	},
+	"home": {
+		"newGames": "Nouveaux jeux",
+		"nextReleases": "Prochaines sorties",
+		"signIn": "Se connecter"
+	},
 	"auth": {
 		"signIn": "Connectez-vous à votre compte",
 		"signUp": "Inscrivez-vous gratuitement",

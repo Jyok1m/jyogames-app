@@ -101,7 +101,10 @@ export default function Header() {
   };
 
   return (
-    <Disclosure as="nav" className="bg-blue-950 shadow absolute w-full">
+    <Disclosure
+      as="nav"
+      className="absolute w-full shadow bg-gradient-to-b from-blue-950 to-blue-900"
+    >
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -113,12 +116,12 @@ export default function Header() {
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon
-                      className="h-8 w-8 font-medium text-white cursor-pointer hover:text-indigo-500"
+                      className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
                       aria-hidden="true"
                     />
                   ) : (
                     <Bars3Icon
-                      className="h-8 w-8 font-medium text-white cursor-pointer hover:text-indigo-500"
+                      className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
                       aria-hidden="true"
                     />
                   )}
@@ -126,16 +129,16 @@ export default function Header() {
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div
-                  className="flex flex-shrink-0 items-center cursor-pointer"
+                  className="flex flex-shrink-0 cursor-pointer items-center"
                   onClick={() => router.push("/")}
                 >
                   <img
-                    className=" h-20 w-auto"
+                    className="h-20 w-auto"
                     src="/logo.png"
                     alt="Logo Jyogames"
                   />
                 </div>
-                <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                <div className="hidden sm:space-x-8 sm:ml-6 sm:flex">
                   {/* Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" */}
                   <a
                     href="/jyogames-app/public"
@@ -168,7 +171,7 @@ export default function Header() {
                   <div>
                     <Menu.Button className="rounded-md px-2 py-2 text-sm font-semibold text-white shadow-sm">
                       <GlobeAltIcon
-                        className="h-8 w-8 font-medium text-white cursor-pointer hover:text-indigo-500"
+                        className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
                         aria-hidden="true"
                       />
                     </Menu.Button>
@@ -271,10 +274,10 @@ export default function Header() {
                 {!uid && isMobile && (
                   <button
                     type="button"
-                    className="h-8 w-8 font-medium text-white cursor-pointer hover:text-indigo-500"
+                    className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
                     onClick={() => router.push("/auth")}
                   >
-                    <UserCircleIcon className="h-8 w-8 font-medium text-white cursor-pointer" />
+                    <UserCircleIcon className="h-8 w-8 cursor-pointer font-medium text-white" />
                   </button>
                 )}
 
@@ -292,33 +295,33 @@ export default function Header() {
           </div>
 
           <Disclosure.Panel className="sm:hidden">
-            <div className="space-y-1 pb-4 pt-2">
+            <div className="pt-2 pb-4 space-y-1">
               {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
               <Disclosure.Button
                 as="a"
                 href="/"
-                className="block border-l-4 border-indigo-500 bg-indigo-50 py-2 pl-3 pr-4 text-base font-medium text-indigo-700"
+                className="block border-l-4 border-indigo-500 bg-indigo-50 py-2 pr-4 pl-3 text-base font-medium text-indigo-700"
               >
                 Accueil
               </Disclosure.Button>
               {/* <Disclosure.Button
 								as="a"
 								href="/"
-								className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+								className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
 							>
 								Jeux
 							</Disclosure.Button>
 							<Disclosure.Button
 								as="a"
 								href="/"
-								className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+								className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
 							>
 								Statistiques
 							</Disclosure.Button>
 							<Disclosure.Button
 								as="a"
 								href="/"
-								className="block border-l-4 border-transparent py-2 pl-3 pr-4 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
+								className="block border-l-4 border-transparent py-2 pr-4 pl-3 text-base font-medium text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700"
 							>
 								À venir
 							</Disclosure.Button> */}
