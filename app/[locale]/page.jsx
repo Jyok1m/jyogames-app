@@ -1,8 +1,9 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import GameDisplay from "@/app/components/home/GameDisplay";
 
 export default async function Home() {
   const gameList = await fetchGames();
+  const t = await getTranslations("home");
 
   return (
     <main
@@ -20,10 +21,10 @@ export default async function Home() {
               className="btn-orange-gradient text-center"
               href="/auth"
             >
-              Inscription
+              {t("signIn")}
             </a>
             <a type="button" className="btn-blue-gradient text-center" href="/">
-              Prochaines sorties
+              {t("nextReleases")}
             </a>
           </div>
         </div>
@@ -35,14 +36,17 @@ export default async function Home() {
 
 export async function fetchGames() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/library`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/library`, {
+      cache: "no-store",
+    });
     const data = await res.json();
+    const { games, message } = data;
 
     if (res.status !== 200) {
-      throw new Error(data.message);
+      throw new Error(message);
     }
 
-    return data.games;
+    return games;
   } catch (err) {
     console.log(err);
   }
