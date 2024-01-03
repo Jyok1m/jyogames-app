@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import GameDisplay from "@/app/components/home/GameDisplay";
+import GameDisplay from "@/components/home/GameDisplay";
 
 export default async function Home() {
   const gameList = await fetchGames();
@@ -18,12 +18,16 @@ export default async function Home() {
           <div className="my-5 flex w-full flex-row items-center justify-evenly">
             <a
               type="button"
-              className="btn-orange-gradient text-center"
+              className="ml-4 w-5/12 text-center btn-orange-gradient"
               href="/auth"
             >
               {t("signIn")}
             </a>
-            <a type="button" className="btn-blue-gradient text-center" href="/">
+            <a
+              type="button"
+              className="ml-4 w-5/12 text-center btn-blue-gradient"
+              href="/"
+            >
               {t("nextReleases")}
             </a>
           </div>

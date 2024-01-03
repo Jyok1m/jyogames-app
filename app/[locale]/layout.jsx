@@ -1,12 +1,13 @@
 import "../globals.css";
 import { notFound } from "next/navigation";
-import pick from "lodash/pick";
 import { NextIntlClientProvider, useMessages } from "next-intl";
-import StoreProvider from "../StoreProvider";
+import pick from "lodash/pick";
 
-import Header from "@/app/components/Header";
+import StoreProvider from "@/app/StoreProvider";
+import SocketProvider from "@/app/SocketProvider";
+import AuthProvider from "@/app/AuthProvider";
+import Header from "@/components/Header";
 
-// Can be imported from a shared config
 const locales = ["en", "fr"];
 
 export const metadata = {
@@ -23,10 +24,14 @@ export default function LocaleLayout({ children, params: { locale } }) {
     <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
       <body>
         <StoreProvider>
-          <NextIntlClientProvider messages={pick(messages, "header")}>
-            <Header />
-          </NextIntlClientProvider>
-          <main className="w-screen h-screen pt-16">{children}</main>
+          <SocketProvider>
+            <AuthProvider>
+              <NextIntlClientProvider messages={pick(messages, "header")}>
+                <Header />
+              </NextIntlClientProvider>
+              <main className="w-screen h-screen pt-16">{children}</main>
+            </AuthProvider>
+          </SocketProvider>
         </StoreProvider>
       </body>
     </html>

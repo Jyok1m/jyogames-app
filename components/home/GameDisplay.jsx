@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
-
-import GameCard from "@/app/components/GameCard";
+import GameCard from "@/components/GameCard";
 
 export default async function GameDisplay({ gameList }) {
   const t = await getTranslations("home");

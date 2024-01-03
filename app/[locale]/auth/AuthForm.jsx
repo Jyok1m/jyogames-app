@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { connectUser } from "@/lib/reducers/user";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
@@ -11,7 +10,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
 import * as yup from "yup";
-import Notification from "@/app/components/popups/Notification";
+import Notification from "@/components/popups/Notification";
 
 export default function AuthForm() {
   const t = useTranslations("auth");
@@ -41,19 +40,11 @@ export default function AuthForm() {
     email: yup
       .string()
       .required(t("fieldRequired"))
-      .matches(
-        new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g),
-        t("emailNotValid"),
-      ),
+      .matches(new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g), t("emailNotValid")),
     password: yup
       .string()
       .required(t("fieldRequired"))
-      .matches(
-        new RegExp(
-          /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
-        ),
-        t("passwordNotValid"),
-      ),
+      .matches(new RegExp(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/), t("passwordNotValid")),
   });
 
   const forgotSchema = yup.object({
@@ -67,13 +58,7 @@ export default function AuthForm() {
     reset,
     resetField,
   } = useForm({
-    resolver: yupResolver(
-      formType === "signIn"
-        ? signInSchema
-        : formType === "signUp"
-          ? signUpSchema
-          : forgotSchema,
-    ),
+    resolver: yupResolver(formType === "signIn" ? signInSchema : formType === "signUp" ? signUpSchema : forgotSchema),
   });
 
   /* ---------------------------------------------------------------- */
@@ -88,58 +73,44 @@ export default function AuthForm() {
   const onSubmit = async (data) => {
     setLoading(true);
 
+    const statusCodes = {
+      200: t("resetEmailSent"),
+      201: t("accountCreated"),
+      401: t("invalidPassword"),
+      404: t("userNotFound"),
+      500: t("serverError"),
+    };
+
     switch (formType) {
       case "signIn":
         try {
           const { emailOrUsername, password } = data;
 
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/sign-in`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ emailOrUsername, password }),
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/sign-in`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
             },
-          );
-
-          const json = await res.json();
+            body: JSON.stringify({ emailOrUsername, password }),
+          });
 
           const { status } = res;
 
-          switch (status) {
-            case 200:
-              setLoading(false);
-              reset();
-              dispatch(connectUser(json.uid));
-              router.push("/");
-              break;
-            case 401:
-              setLoading(false);
-              setErrorCode(status);
-              setErrorMessage(t("invalidPassword"));
-              setNotificationVisible(true);
-              resetField("password");
-              break;
-            case 404:
-              setLoading(false);
-              setErrorCode(status);
-              setErrorMessage(t("userNotFound"));
-              setNotificationVisible(true);
-              break;
-            default:
-              setLoading(false);
-              setErrorCode(status);
-              setErrorMessage(t("serverError"));
-              setNotificationVisible(true);
-              break;
+          if (status === 200) {
+            reset();
+            router.push("/");
+          } else {
+            setErrorCode(status);
+            setErrorMessage(statusCodes[status]);
+            setNotificationVisible(true);
           }
         } catch (error) {
           console.log(error);
-          setLoading(false);
           setErrorMessage(t("unknownError"));
           setNotificationVisible(true);
+        } finally {
+          setLoading(false);
         }
         break;
       case "signUp":
@@ -156,50 +127,38 @@ export default function AuthForm() {
             return;
           }
 
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/sign-up`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ username, email, password }),
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/sign-up`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          );
-
-          const json = await res.json();
+            body: JSON.stringify({ username, email, password }),
+          });
 
           const { status } = res;
 
-          switch (status) {
-            case 201:
-              setLoading(false);
-              setSuccess(true);
-              setSuccessMessage(t("accountCreated"));
-              setNotificationVisible(true);
-              redirectToForm("signIn");
-              break;
-            case 409:
-              setLoading(false);
-              setErrorCode(status);
+          if (status === 201) {
+            setSuccess(true);
+            setSuccessMessage(statusCodes[status]);
+            redirectToForm("signIn");
+          } else {
+            if (status === 409) {
+              const json = await res.json();
               if (json.field === "username") {
                 setErrorMessage(t("existingUsername"));
               } else {
                 setErrorMessage(t("existingEmail"));
               }
-              setNotificationVisible(true);
-              break;
-            default:
-              setLoading(false);
-              setErrorCode(status);
-              setErrorMessage(t("serverError"));
-              setNotificationVisible(true);
-              break;
+            } else {
+              setErrorMessage(statusCodes[status]);
+            }
+            setErrorCode(status);
           }
         } catch (error) {
-          setLoading(false);
           console.log(error);
           setErrorMessage(t("unknownError"));
+        } finally {
+          setLoading(false);
           setNotificationVisible(true);
         }
         break;
@@ -208,46 +167,32 @@ export default function AuthForm() {
           const { email } = data;
           const language = pathname.slice(1, 3) === "en" ? "en" : "fr";
 
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/forgot-password/${language}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ email }),
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/forgot-password/${language}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          );
+            body: JSON.stringify({ email }),
+          });
 
           const { status } = res;
 
-          switch (status) {
-            case 200:
-              setLoading(false);
-              setSuccess(true);
-              setSuccessMessage(t("resetEmailSent"));
-              setNotificationVisible(true);
-              redirectToForm("signIn");
-              break;
-            case 404:
-              setLoading(false);
-              setErrorCode(status);
-              setErrorMessage(t("userNotFound"));
-              setNotificationVisible(true);
-              break;
-            default:
-              setLoading(false);
-              setErrorCode(status);
-              setErrorMessage(t("serverError"));
-              setNotificationVisible(true);
-              break;
+          if (status === 200) {
+            setSuccess(true);
+            setSuccessMessage(statusCodes[status]);
+            redirectToForm("signIn");
+          } else {
+            setErrorCode(status);
+            setErrorMessage(statusCodes[status]);
           }
         } catch (error) {
-          setLoading(false);
           console.log(error);
           setErrorMessage(t("unknownError"));
+        } finally {
+          setLoading(false);
           setNotificationVisible(true);
         }
+
         break;
       default:
         break;
@@ -271,15 +216,10 @@ export default function AuthForm() {
   const signInForm = (
     <div className="mx-auto w-full max-w-sm lg:w-96">
       <div>
-        <h2 className="text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {t("signIn")}
-        </h2>
+        <h2 className="text-2xl font-bold leading-9 tracking-tight text-gray-900">{t("signIn")}</h2>
         <p className="mt-2 text-sm leading-6 text-gray-500">
           {t("notAMember")}{" "}
-          <a
-            className="font-semibold text-indigo-700 hover:text-indigo-500 cursor-pointer"
-            onClick={() => !loading && redirectToForm("signUp")}
-          >
+          <a className="font-semibold text-indigo-700 hover:text-indigo-500 cursor-pointer" onClick={() => !loading && redirectToForm("signUp")}>
             {t("createAccount")}
           </a>
         </p>
@@ -287,16 +227,9 @@ export default function AuthForm() {
 
       <div className="mt-10">
         <div>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            method="POST"
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-6">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("emailOrUsername")}
               </label>
               <div className="mt-2">
@@ -309,19 +242,12 @@ export default function AuthForm() {
                   aria-invalid={errors.emailOrUsername ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.emailOrUsername && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.emailOrUsername?.message}
-                  </p>
-                )}
+                {errors.emailOrUsername && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.emailOrUsername?.message}</p>}
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("password")}
               </label>
               <div className="mt-2">
@@ -335,11 +261,7 @@ export default function AuthForm() {
                   aria-invalid={errors.password ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.password && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.password?.message}
-                  </p>
-                )}
+                {errors.password && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.password?.message}</p>}
               </div>
             </div>
 
@@ -393,23 +315,14 @@ export default function AuthForm() {
           <ArrowLeftIcon className="h-5 w-5 mr-1" />
           {t("goBack")}
         </a>
-        <h2 className="text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {t("signUp")}
-        </h2>
+        <h2 className="text-2xl font-bold leading-9 tracking-tight text-gray-900">{t("signUp")}</h2>
       </div>
 
       <div className="mt-10">
         <div>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            method="POST"
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-6">
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("username")}
               </label>
               <div className="mt-2">
@@ -422,19 +335,12 @@ export default function AuthForm() {
                   aria-invalid={errors.username ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.username && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.username?.message}
-                  </p>
-                )}
+                {errors.username && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.username?.message}</p>}
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("emailAddress")}
               </label>
               <div className="mt-2">
@@ -448,19 +354,12 @@ export default function AuthForm() {
                   aria-invalid={errors.email ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.email && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.email?.message}
-                  </p>
-                )}
+                {errors.email && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.email?.message}</p>}
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("password")}
               </label>
               <div className="mt-2">
@@ -474,19 +373,12 @@ export default function AuthForm() {
                   aria-invalid={errors.password ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.password && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.password?.message}
-                  </p>
-                )}
+                {errors.password && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.password?.message}</p>}
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="passwordConfirmation"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="passwordConfirmation" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("passwordConfirmation")}
               </label>
               <div className="mt-2">
@@ -500,11 +392,7 @@ export default function AuthForm() {
                   aria-invalid={errors.passwordConfirmation ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.passwordConfirmation && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.passwordConfirmation?.message}
-                  </p>
-                )}
+                {errors.passwordConfirmation && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.passwordConfirmation?.message}</p>}
               </div>
             </div>
 
@@ -547,27 +435,16 @@ export default function AuthForm() {
           <ArrowLeftIcon className="h-5 w-5 mr-1" />
           {t("goBack")}
         </a>
-        <h2 className="text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {t("forgotPassword")}
-        </h2>
+        <h2 className="text-2xl font-bold leading-9 tracking-tight text-gray-900">{t("forgotPassword")}</h2>
 
-        <p className="mt-2 text-sm leading-6 text-gray-500">
-          {t("forgotInstructions")}
-        </p>
+        <p className="mt-2 text-sm leading-6 text-gray-500">{t("forgotInstructions")}</p>
       </div>
 
       <div className="mt-10">
         <div>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            method="POST"
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-6">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                 {t("emailAddress")}
               </label>
               <div className="mt-2">
@@ -581,11 +458,7 @@ export default function AuthForm() {
                   aria-invalid={errors.email ? "true" : "false"}
                   className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-700 sm:text-sm sm:leading-6"
                 />
-                {errors.email && (
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    {errors.email?.message}
-                  </p>
-                )}
+                {errors.email && <p className="mt-2 text-sm leading-6 text-gray-500">{errors.email?.message}</p>}
               </div>
             </div>
 

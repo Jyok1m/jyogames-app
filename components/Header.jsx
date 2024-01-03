@@ -2,22 +2,13 @@
 
 import { Fragment, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import {
-  useRouter,
-  usePathname,
-  useParams,
-  useSelectedLayoutSegment,
-} from "next/navigation";
-import socketIOClient from "socket.io-client";
+import { useRouter, usePathname, useParams, useSelectedLayoutSegment } from "next/navigation";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import {
-  Bars3Icon,
-  XMarkIcon,
-  GlobeAltIcon,
-  UserCircleIcon,
-} from "@heroicons/react/24/outline";
-import { useSelector, useDispatch } from "react-redux";
-import { disconnectUser, changeLocale } from "@/lib/reducers/user";
+import { Bars3Icon, XMarkIcon, GlobeAltIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { useDispatch } from "react-redux";
+import { changeLocale } from "@/lib/reducers/user";
+import { useSocket } from "@/app/SocketProvider";
+import Cookies from "js-cookie";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -27,6 +18,8 @@ export default function Header() {
   const t = useTranslations("header");
   const router = useRouter();
   const dispatch = useDispatch();
+  const socket = useSocket();
+  const isConnected = !!Cookies.get("connected");
 
   /* ---------------------------------------------------------------- */
   /*                               URLS                               */
@@ -35,42 +28,23 @@ export default function Header() {
   const params = useParams();
   const slugSegment = useSelectedLayoutSegment() || "";
 
-  const { uid } = useSelector((state) => state.user.value);
-
   /* ---------------------------------------------------------------- */
   /*                            State hooks                           */
   /* ---------------------------------------------------------------- */
 
-  const [socket, setSocket] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Handle socket connection with backend
   useEffect(() => {
-    const socket = socketIOClient(process.env.NEXT_PUBLIC_BACKEND_URL); // Création du socket et lien avec le serveur
-    setSocket(socket); // Stockage du socket dans le state
-
-    // Connection du socket au serveur
-    socket.on("connect", () => {
-      if (uid) {
-        socket.emit("connectUser", { uid }, (response) => {
-          console.log(response);
-        });
-      }
-    });
-
     window.addEventListener("resize", () => {
       setIsMobile(window.innerWidth < 640);
     });
 
     return () => {
-      socket.off("connect"); // Débranche l'écoute du socket "connect"
-      socket.disconnect(); // Déconnecte le socket du serveur
-
       window.removeEventListener("resize", () => {
         setIsMobile(window.innerWidth < 640);
       });
     };
-  }, [uid]);
+  }, []);
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 640);
@@ -78,21 +52,17 @@ export default function Header() {
   }, [pathname]);
 
   const handleDisconnection = async () => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/sign-out`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ uid }),
-      },
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/sign-out`, {
+      method: "GET",
+      credentials: "include",
+    });
 
     const { status } = res;
 
     if (status === 200) {
-      dispatch(disconnectUser());
+      socket.emit("offline", (res) => {
+        console.log(res);
+      });
       router.push("/");
     } else {
       const json = await res.json();
@@ -101,10 +71,7 @@ export default function Header() {
   };
 
   return (
-    <Disclosure
-      as="nav"
-      className="absolute w-full shadow bg-gradient-to-b from-blue-950 to-blue-900"
-    >
+    <Disclosure as="nav" className="absolute w-full shadow bg-gradient-to-b from-blue-950 to-blue-900">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -115,33 +82,20 @@ export default function Header() {
                   <span className="absolute -inset-0.5" />
                   <span className="sr-only">Open main menu</span>
                   {open ? (
-                    <XMarkIcon
-                      className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
-                      aria-hidden="true"
-                    />
+                    <XMarkIcon className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500" aria-hidden="true" />
                   ) : (
-                    <Bars3Icon
-                      className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
-                      aria-hidden="true"
-                    />
+                    <Bars3Icon className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500" aria-hidden="true" />
                   )}
                 </Disclosure.Button>
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div
-                  className="flex flex-shrink-0 cursor-pointer items-center"
-                  onClick={() => router.push("/")}
-                >
-                  <img
-                    className="h-20 w-auto"
-                    src="/logo.png"
-                    alt="Logo Jyogames"
-                  />
+                <div className="flex flex-shrink-0 cursor-pointer items-center" onClick={() => router.push("/")}>
+                  <img className="h-20 w-auto" src="/logo.png" alt="Logo Jyogames" />
                 </div>
                 <div className="hidden sm:space-x-8 sm:ml-6 sm:flex">
                   {/* Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" */}
                   <a
-                    href="/jyogames-app/public"
+                    href="/"
                     className="inline-flex items-center border-b-2 border-indigo-500 px-1 pt-1 text-sm font-medium text-white hover:border-indigo-500 hover:text-indigo-500"
                   >
                     {t("home")}
@@ -170,10 +124,7 @@ export default function Header() {
                 <Menu as="div" className="relative ml-3">
                   <div>
                     <Menu.Button className="rounded-md px-2 py-2 text-sm font-semibold text-white shadow-sm">
-                      <GlobeAltIcon
-                        className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
-                        aria-hidden="true"
-                      />
+                      <GlobeAltIcon className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500" aria-hidden="true" />
                     </Menu.Button>
                   </div>
                   <Transition
@@ -190,10 +141,7 @@ export default function Header() {
                         {({ active }) => (
                           <a
                             onClick={() => router.push(`/fr/${slugSegment}`)}
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700 cursor-pointer",
-                            )}
+                            className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700 cursor-pointer")}
                           >
                             Français
                           </a>
@@ -203,10 +151,7 @@ export default function Header() {
                         {({ active }) => (
                           <a
                             onClick={() => router.push(`/en/${slugSegment}`)}
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700 cursor-pointer",
-                            )}
+                            className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700 cursor-pointer")}
                           >
                             English
                           </a>
@@ -218,7 +163,7 @@ export default function Header() {
 
                 {/* Profile dropdown */}
 
-                {uid && (
+                {isConnected && (
                   <Menu as="div" className="relative ml-3">
                     <div>
                       <Menu.Button className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
@@ -257,10 +202,7 @@ export default function Header() {
                           {({ active }) => (
                             <a
                               onClick={handleDisconnection}
-                              className={classNames(
-                                active ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm text-gray-700 cursor-pointer",
-                              )}
+                              className={classNames(active ? "bg-gray-100" : "", "block px-4 py-2 text-sm text-gray-700 cursor-pointer")}
                             >
                               {t("signOut")}
                             </a>
@@ -271,7 +213,7 @@ export default function Header() {
                   </Menu>
                 )}
 
-                {!uid && isMobile && (
+                {!isConnected && isMobile && (
                   <button
                     type="button"
                     className="h-8 w-8 cursor-pointer font-medium text-white hover:text-indigo-500"
@@ -281,7 +223,7 @@ export default function Header() {
                   </button>
                 )}
 
-                {!uid && !isMobile && (
+                {!isConnected && !isMobile && (
                   <button
                     type="button"
                     className="rounded-md bg-indigo-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
